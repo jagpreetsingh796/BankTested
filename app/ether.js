@@ -1,4 +1,9 @@
 const ethers = require('ethers');
+const express = require('express')
+const bodyParser = require('body-parser')
+const server=express()
+server.use(bodyParser.json());
+
 const aa=require('../build/contracts/Bank.json')
 require('dotenv').config();
 const pk=process.env.privateKey
@@ -22,13 +27,30 @@ let contract = new ethers.Contract(address, abi, provider);
 contractWithSigner=contract.connect(wallet)
 // console.log(contractWithSigner)
 
-async function openAccount()
-{
-let tx= await contractWithSigner.openAccount("aaaa",25,"bbbb","cccc",{value:ethers.utils.parseEther("1.0")})
-console.log(tx)
-}
-openAccount()
-contract.on("bal",(bal)=>{
+// async function openAccount()
+// {
+// let tx= await contractWithSigner.openAccount("aaaa",25,"bbbb","cccc",{value:ethers.utils.parseEther("1.0")})
+// console.log(tx)
+// }
+// openAccount()
+// contract.on("bal",(bal)=>{
 
+//     console.log("The balance is",bal)
+// })
+
+async function checkbalance()
+{
+    let bal = await contractWithSigner.checkbalanceofbank()
     console.log("The balance is",bal)
+    return(bal)
+
+}
+
+
+server.get('/getbal', async (request, response) => {
+    let value = await checkbalance();
+    response.send(value);
+  });
+server.listen(process.env.PORT,()=>{
+    console.log("The server is running at",process.env.PORT)
 })
