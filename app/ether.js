@@ -38,7 +38,22 @@ contractWithSigner=contract.connect(wallet)
 //     console.log("The balance is",bal)
 // })
 
-async function checkbalance()
+async function checkbalanceofUSER()
+{
+    let bal = await contractWithSigner.callBalance()
+    console.log("The balance is",bal)
+    return(bal)
+
+}
+// checkbalanceofUSER()
+async function withdrawfrom( amount)
+{
+    let tx=await contractWithSigner.withdraw(amount)
+    console.log("THe transaction is",tx)
+    return 
+
+}
+async function checkbankbalance()
 {
     let bal = await contractWithSigner.checkbalanceofbank()
     console.log("The balance is",bal)
@@ -46,11 +61,28 @@ async function checkbalance()
 
 }
 
-
 server.get('/getbal', async (request, response) => {
     let value = await checkbalance();
     response.send(value);
   });
+server.post('/withdraw',async(request,response)=>
+{
+    let amount=request.body.amount
+    await contractWithSigner.withdraw(amount)
+    let value= await checkbalance();
+    response.send(value)
+
+})
+server.post('/getbaluser',async(request,response)=>
+{
+    let addr=request.body.address
+    
+    let value= await contractWithSigner.callBalance(addr) 
+    console.log("THe user balance is",value)
+    response.send(value)
+
+})
 server.listen(process.env.PORT,()=>{
     console.log("The server is running at",process.env.PORT)
 })
+
