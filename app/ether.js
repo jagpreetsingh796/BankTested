@@ -27,62 +27,87 @@ let contract = new ethers.Contract(address, abi, provider);
 contractWithSigner=contract.connect(wallet)
 // console.log(contractWithSigner)
 
-// async function openAccount()
-// {
-// let tx= await contractWithSigner.openAccount("aaaa",25,"bbbb","cccc",{value:ethers.utils.parseEther("1.0")})
-// console.log(tx)
-// }
+async function openAccount(name,age,region,typeOfAccount,amount)
+{
+let tx= await contractWithSigner.openAccount(name,age,region,typeOfAccount,{value:ethers.utils.parseEther(amount)})
+console.log(tx)
+return(tx)
+}
 // openAccount()
+
 // contract.on("bal",(bal)=>{
 
-//     console.log("The balance is",bal)
+//     console.log("The balance IN the event is",bal)
 // })
 
-async function checkbalanceofUSER()
+
+async function checkbalanceofUSER(address)
 {
-    let bal = await contractWithSigner.callBalance()
-    console.log("The balance is",bal)
-    return(bal)
+    let bal = await contractWithSigner.callBalance(address)
+    console.log("The balance is  in checkbalance function is",bal.toString())
+    return(bal.toString())
 
 }
 // checkbalanceofUSER()
-async function withdrawfrom( amount)
+async function withdrawfrom(amount,address)
 {
-    let tx=await contractWithSigner.withdraw(amount)
-    console.log("THe transaction is",tx)
-    return 
-
+    let tx=await contractWithSigner.withdraw(ethers.utils.parseEther(amount))
+    let bal = await contractWithSigner.callBalance(address)
+    console.log("The balance after withdrawal is",bal.toString())
+    // return(bal.toString())
 }
+
+
+ 
 async function checkbankbalance()
 {
     let bal = await contractWithSigner.checkbalanceofbank()
-    console.log("The balance is",bal)
-    return(bal)
+    // console.log("The balance of the bank  is",bal.toNumber())
+    return(bal.toString())
 
 }
+// checkbankbalance()
 
-server.get('/getbal', async (request, response) => {
-    let value = await checkbalance();
+server.post('/getbal', async (request, response) => {
+    let address=request.body.address
+
+    
     response.send(value);
   });
 server.post('/withdraw',async(request,response)=>
 {
     let amount=request.body.amount
-    await contractWithSigner.withdraw(amount)
-    let value= await checkbalance();
-    response.send(value)
-
-})
-server.post('/getbaluser',async(request,response)=>
-{
     let addr=request.body.address
+   await withdrawfrom(amount,addr)
+    let value = await checkbalanceofUSER(addr);
     
-    let value= await contractWithSigner.callBalance(addr) 
-    console.log("THe user balance is",value)
     response.send(value)
 
 })
+server.get('/getbalofbank',async(request,response)=>
+{
+   
+    let value= await checkbankbalance()
+    console.log("THe bank's balance is",value)
+    response.send(value)
+
+})
+server.post('/openAccount',async(request,response)=>
+{
+    let name=request.body.name
+    let age=request.body.age
+    let region=request.body.region
+    let typeOfAccount=request.body.type
+    let amount=request.body.amount
+    let tx= await openAccount(name,age,region,typeOfAccount,amount)
+    response.send(tx)
+
+
+
+})
+
 server.listen(process.env.PORT,()=>{
     console.log("The server is running at",process.env.PORT)
 })
+
 
